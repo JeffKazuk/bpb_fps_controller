@@ -1,6 +1,6 @@
-extends Spatial
+extends Node3D
 
-export (Vector3) var move_to = Vector3(0,0,-6)
+@export var move_to: Vector3 = Vector3(0,0,-6)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

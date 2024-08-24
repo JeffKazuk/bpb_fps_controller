@@ -1,15 +1,15 @@
-extends Spatial
+extends Node3D
 
-export (NodePath) var follow_target
+@export var follow_target: NodePath
 
-var target : Spatial
+var target : Node3D
 var update = false
-var gt_prev : Transform
-var gt_current : Transform
+var gt_prev : Transform3D
+var gt_current : Transform3D
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	set_as_toplevel(true)
+	set_as_top_level(true)
 	target = get_node_or_null(follow_target)
 	if target == null:
 		target = get_parent()

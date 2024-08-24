@@ -1,0 +1,11 @@
+res://default_env.tres
+res://demo/demo_scene.tscn
+res://player_controller/Player.gd
+res://demo/local_down_gravity.tscn
+res://player_controller/Player.tscn
+res://player_controller/system/Signal_out.gd
+res://player_controller/Camera_addon.gd
+res://player_controller/system/grabable_obj.gd
+res://player_controller/GameLogic_addon.gd
+res://demo/barrel.tscn
+res://player_controller/GameLogic_addon.tscn

@@ -1,4 +1,4 @@
-extends Spatial
+extends Node3D
 
 class_name BPB_GameLogic_addon
 
@@ -13,10 +13,10 @@ enum ABILITY_LIST {
 	WIND_BLAST,
 }
 
-export (NodePath) var path_body
-export (NodePath) var path_camera
-export (bool) var feat_grab = true
-export (float) var throw_force = 10
+@export var path_body: NodePath
+@export var path_camera: NodePath
+@export var feat_grab: bool = true
+@export var throw_force: float = 10
 
 var target_body : BPB_Fps_Controller
 var target_camera : BPB_Camera_addon
@@ -39,16 +39,16 @@ var blink_fov = 30
 var wind_blast_force = 50
 var wind_blast_timer = 0
 
-onready var root = $root
-onready var ray_activate =$root/ray_activate
-onready var ray_blink = $root/ray_blink
-onready var grab_point = $root/grab_point
-onready var blink_marker = $root/ray_blink/blink_marker
-onready var area_wind_blast = $root/Area_wind_blast
-onready var bullet_origin = $root/bullet_origin
+@onready var root = $root
+@onready var ray_activate =$root/ray_activate
+@onready var ray_blink = $root/ray_blink
+@onready var grab_point = $root/grab_point
+@onready var blink_marker = $root/ray_blink/blink_marker
+@onready var area_wind_blast = $root/Area_wind_blast
+@onready var bullet_origin = $root/bullet_origin
 
 #PRELOAD
-onready var bullet_i = preload("res://demo/bullet.tscn")
+@onready var bullet_i = preload("res://demo/bullet.tscn")
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -74,7 +74,7 @@ func init_setup():
 	target.add_child(self)
 	global_transform = target.global_transform
 
-	blink_marker.set_as_toplevel(true)
+	blink_marker.set_as_top_level(true)
 	set_process(true)
 
 
@@ -137,7 +137,7 @@ func update_blink_marker():
 	if ray_blink.is_colliding():
 		blink_marker.global_transform.origin = ray_blink.get_collision_point()
 	else:
-		blink_marker.global_transform.origin = root.global_transform.origin + (-root.global_transform.basis.z * (ray_blink.cast_to.length()))
+		blink_marker.global_transform.origin = root.global_transform.origin + (-root.global_transform.basis.z * (ray_blink.target_position.length()))
 	
 func get_default_activate_data():
 	activate_data.body = target_body
@@ -188,7 +188,7 @@ func try_action_m1_just_released():
 			do_wind_blast()
 			
 func do_blink():
-	var blink_dist = ray_blink.cast_to.length()
+	var blink_dist = ray_blink.target_position.length()
 	if ray_blink.is_colliding():
 		blink_dist = ray_blink.global_transform.origin.distance_to(ray_blink.get_collision_point()) - 0.4
 	var blink_target = ray_blink.global_transform.origin + (-ray_blink.global_transform.basis.z * blink_dist)
@@ -212,11 +212,11 @@ func try_shoot():
 		return 
 		
 	for i in weapon_data[active_weapon].bullet_shot:
-		var bullet = bullet_i.instance()
+		var bullet = bullet_i.instantiate()
 		add_child(bullet)
 		bullet.global_transform = bullet_origin.global_transform
-		var rx = rand_range(-deg2rad(weapon_data[active_weapon].spread/2), deg2rad(weapon_data[active_weapon].spread/2))
-		var ry = rand_range(-deg2rad(weapon_data[active_weapon].spread/2), deg2rad(weapon_data[active_weapon].spread/2))
+		var rx = randf_range(-deg_to_rad(weapon_data[active_weapon].spread/2), deg_to_rad(weapon_data[active_weapon].spread/2))
+		var ry = randf_range(-deg_to_rad(weapon_data[active_weapon].spread/2), deg_to_rad(weapon_data[active_weapon].spread/2))
 		bullet.rotation = Vector3(bullet.rotation.x + rx, bullet.rotation.y + ry, bullet.rotation.z )
 		bullet.global_transform.origin = bullet_origin.global_transform.origin
 	fire_cooldown = weapon_data[active_weapon].fire_rate

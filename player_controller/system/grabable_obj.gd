@@ -1,4 +1,4 @@
-extends RigidBody
+extends RigidBody3D
 
 var grabbed = false
 var target_obj = null
@@ -61,8 +61,8 @@ func activate(adata):
 		first_y = rotation.y
 		first_z = rotation.z
 		
-		var deg_first_y = rad2deg(first_y)
-		var deg_body_y = rad2deg(target_rotation_body.rotation.y)
+		var deg_first_y = rad_to_deg(first_y)
+		var deg_body_y = rad_to_deg(target_rotation_body.rotation.y)
 		
 		if deg_first_y < -135 and deg_body_y > 135:
 			deg_first_y += 360
@@ -73,26 +73,26 @@ func activate(adata):
 		var deg_diff = (deg_first_y - deg_body_y) + 45
 
 		if deg_diff >= 0 and deg_diff <= 90:
-			rot_y_add = deg2rad(0)
+			rot_y_add = deg_to_rad(0)
 		elif deg_diff > 90 and deg_diff <= 180:
-			rot_y_add = deg2rad(90)
+			rot_y_add = deg_to_rad(90)
 		elif deg_diff > 180 and deg_diff <= 270:
-			rot_y_add = deg2rad(180)
+			rot_y_add = deg_to_rad(180)
 		elif deg_diff > 270 and deg_diff <= 360:
-			rot_y_add = deg2rad(-90)
+			rot_y_add = deg_to_rad(-90)
 			
 		elif deg_diff < 0 and deg_diff >= -90:
-			rot_y_add = deg2rad(-90)
+			rot_y_add = deg_to_rad(-90)
 		elif deg_diff < -90 and deg_diff >= -180:
-			rot_y_add = deg2rad(-180)
+			rot_y_add = deg_to_rad(-180)
 		elif deg_diff < -180 and deg_diff >= -270:
-			rot_y_add = deg2rad(90)
+			rot_y_add = deg_to_rad(90)
 		elif deg_diff < -270 and deg_diff >= -360:
-			rot_y_add = deg2rad(0)
+			rot_y_add = deg_to_rad(0)
 			
 		else:
 			print("wrongly calculated ", deg_diff)
-			rot_y_add = deg2rad(0)
+			rot_y_add = deg_to_rad(0)
 			
 	else:
 		grabbed = false

@@ -1,5 +1,5 @@
 #THIS CONTROLLER IS DESIGNED FOR 60 PHYSIC FPS
-extends KinematicBody
+extends CharacterBody3D
 
 class_name BPB_Fps_Controller
 
@@ -36,32 +36,32 @@ enum BODY_HEIGHT_LIST {
 	UNCROUCHING
 }
 
-export (bool) var feat_crouching = true
-export (bool) var feat_climbing = true
-export (bool) var feat_slide = true
-export (bool) var feat_wallrun = true
-export (bool) var stand_after_slide = true
-export (bool) var stand_after_climb = true
+@export var feat_crouching: bool = true
+@export var feat_climbing: bool = true
+@export var feat_slide: bool = true
+@export var feat_wallrun: bool = true
+@export var stand_after_slide: bool = true
+@export var stand_after_climb: bool = true
 
-export (float) var MOUSE_SENSITIVITY = 0.07
-export (bool) var air_control = false
-export (String, "C0.6", "C0.7", "C0.8", "C0.9") var crouch_anim = "C0.9"
-export (float) var speed_h_max = 360
-export (float) var speed_acc = 30
-export (float) var speed_deacc = 48
-export (float) var sprint_modi = 1.5
-export (float) var crouch_modi = 0.6
-export (float) var coyote_time : float = 0.2
-export (float) var gravity_force = 30
-export (float) var gravity_acc = 20
-export (float) var jump_force = -6
-export (int) var jump_limit = 1
-export (float) var slope_limit = 46.0
-export (float) var on_slope_steep_speed = 1.0
-export (float) var slide_time = 1.2
-export (float) var bump_force = 10
-export (float) var swim_h_deacc = 58
-export (float) var swim_v_deacc = 0.95
+@export var MOUSE_SENSITIVITY: float = 0.07
+@export var air_control: bool = false
+@export var crouch_anim = "C0.9" # (String, "C0.6", "C0.7", "C0.8", "C0.9")
+@export var speed_h_max: float = 360
+@export var speed_acc: float = 30
+@export var speed_deacc: float = 48
+@export var sprint_modi: float = 1.5
+@export var crouch_modi: float = 0.6
+@export var coyote_time: float = 0.2
+@export var gravity_force: float = 30
+@export var gravity_acc: float = 20
+@export var jump_force: float = -6
+@export var jump_limit: int = 1
+@export var slope_limit: float = 46.0
+@export var on_slope_steep_speed: float = 1.0
+@export var slide_time: float = 1.2
+@export var bump_force: float = 10
+@export var swim_h_deacc: float = 58
+@export var swim_v_deacc: float = 0.95
 
 var gravity_vector_default  = Vector3.DOWN
 var gravity_vector = gravity_vector_default
@@ -78,7 +78,7 @@ var dir = Vector3()
 var prev_vel_h = Vector3()
 var prev_vel_v = Vector3()
 
-var velocity = Vector3()
+var speed = Vector3()
 var velocity_h = Vector3()
 var velocity_v = Vector3()
 
@@ -143,21 +143,21 @@ var input_sprint_just_pressed : bool = false
 var input_crouch_just_pressed : bool = false
 var input_jump_pressed : bool = false
 
-onready var state = STATELIST.WALK
-onready var ap = $AnimationPlayer
-onready var rotation_helper = $rotation_helper
-onready var camera_root = $rotation_helper/camera_root
+@onready var state = STATELIST.WALK
+@onready var ap = $AnimationPlayer
+@onready var rotation_helper = $rotation_helper
+@onready var camera_root = $rotation_helper/camera_root
 
-onready var ray_uncrouch = $ray_uncrouch
+@onready var ray_uncrouch = $ray_uncrouch
 
-onready var ray_climb1 = $ray_climb1
-onready var ray_climb2 = $ray_climb2
-onready var ray_climb3 = $ray_climb3
+@onready var ray_climb1 = $ray_climb1
+@onready var ray_climb2 = $ray_climb2
+@onready var ray_climb3 = $ray_climb3
 
-onready var root_ray_stair = $root_ray_stair
-onready var ray_stair1 = $root_ray_stair/ray_stair1
-onready var ray_stair2 = $root_ray_stair/ray_stair2
-onready var ray_wallrun = $root_ray_stair/ray_wallrun
+@onready var root_ray_stair = $root_ray_stair
+@onready var ray_stair1 = $root_ray_stair/ray_stair1
+@onready var ray_stair2 = $root_ray_stair/ray_stair2
+@onready var ray_wallrun = $root_ray_stair/ray_wallrun
 
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -186,10 +186,10 @@ func _ready():
 func _input(event):
 	#MOUSE CAMERA
 	if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
-		rotation_helper.rotation.x += -deg2rad(event.relative.y * MOUSE_SENSITIVITY)
+		rotation_helper.rotation.x += -deg_to_rad(event.relative.y * MOUSE_SENSITIVITY)
 		
 		var basis_target = global_transform.basis
-		basis_target.x = basis_target.x.rotated(-gravity_vector, deg2rad(event.relative.x * MOUSE_SENSITIVITY * -1)).normalized()
+		basis_target.x = basis_target.x.rotated(-gravity_vector, deg_to_rad(event.relative.x * MOUSE_SENSITIVITY * -1)).normalized()
 		basis_target.y = -gravity_vector.normalized()
 		basis_target.z = basis_target.x.cross(basis_target.y).normalized()
 		global_transform.basis = basis_target.orthonormalized()
@@ -207,8 +207,8 @@ func _process(delta):
 	gt_target = gt_target.orthonormalized()
 	
 
-	var a = Quat((global_transform.basis).orthonormalized())
-	var b = Quat(gt_target.basis)
+	var a = Quaternion((global_transform.basis).orthonormalized())
+	var b = Quaternion(gt_target.basis)
 	var c = a.slerp(b, delta * 6)
 	global_transform.basis = Basis(c).orthonormalized()
 	#global_transform = global_transform.interpolate_with(gt_target, delta * 6)
@@ -311,10 +311,10 @@ func try_climb_stairs():
 	
 	var ret = false
 	if ray_stair2.is_colliding() and velocity_h.length() > 0.1:
-		var angle2 = rad2deg( ray_stair2.get_collision_normal().angle_to(-gravity_vector) )
+		var angle2 = rad_to_deg( ray_stair2.get_collision_normal().angle_to(-gravity_vector) )
 		if angle2 > 80.0:
 			if ray_stair1.is_colliding():
-				var angle = rad2deg( ray_stair1.get_collision_normal().angle_to(-gravity_vector) )
+				var angle = rad_to_deg( ray_stair1.get_collision_normal().angle_to(-gravity_vector) )
 				if angle > 80.0:
 					var d1 = ray_stair1.global_transform.origin.distance_to(ray_stair1.get_collision_point())
 					var d2 = ray_stair2.global_transform.origin.distance_to(ray_stair2.get_collision_point())
@@ -369,12 +369,12 @@ func do_walk(delta):
 			
 	
 	#IF CAN DETECT FLOOR, GET COLLISION INFORMATION WITH FLOOR, WITH LARGEST ANGLE
-	if is_on_floor() and get_slide_count() > 0:
-		for i in get_slide_count():
+	if is_on_floor() and get_slide_collision_count() > 0:
+		for i in get_slide_collision_count():
 			var tmp_col = get_slide_collision(i)
 			
 			floor_collision = tmp_col
-			floor_normal = tmp_col.normal
+			floor_normal = tmp_col.get_normal()
 		
 		if ray_wallrun.is_colliding():
 			floor_normal = ray_wallrun.get_collision_normal()
@@ -382,8 +382,8 @@ func do_walk(delta):
 		
 		if gravity_obj == null:
 			#ROTATE BODY TO FOLLOW FLOOR ROTATION, Y AXIS ONLY
-			if floor_obj != floor_collision.collider: #FIRST TIME BEING ON FLOOR, SAVE CURRENT FLOOR ROTATION FOR CALCULATION NEXT FRAME
-				floor_obj = floor_collision.collider
+			if floor_obj != floor_collision.get_collider(): #FIRST TIME BEING ON FLOOR, SAVE CURRENT FLOOR ROTATION FOR CALCULATION NEXT FRAME
+				floor_obj = floor_collision.get_collider()
 				floor_prev_rot = floor_obj.rotation * Vector3(0,1,0)
 			else: #APPLY FLOOR ROTATION TO BODY
 				var floor_rot = (floor_obj.rotation - floor_prev_rot) * Vector3(0,1,0)
@@ -440,10 +440,10 @@ func do_walk(delta):
 		emit_signal("body_just_jump")
 	elif is_on_floor() and jump_skip_timer <= 0: 
 		#ON FLOOR
-		if floor_angle <= deg2rad(slope_limit): #STICKING ON FLOOR / SLOPE
+		if floor_angle <= deg_to_rad(slope_limit): #STICKING ON FLOOR / SLOPE
 			if floor_collision:
-				vertical_vector = -floor_collision.normal
-				snap_vector = -floor_collision.normal
+				vertical_vector = -floor_collision.get_normal()
+				snap_vector = -floor_collision.get_normal()
 			velocity_v = vertical_vector * 0.1
 		else: #SLOPE TOO STEEP, SLIDE DOWN
 			if not climb_stair:
@@ -470,11 +470,11 @@ func do_walk(delta):
 		velocity_v += impulse * Vector3(0,1,0)
 		impulse = Vector3.ZERO
 		
-	velocity = velocity_h + velocity_v
+	speed = velocity_h + velocity_v
 
 	#ADD EXTERNAL FORCE TO OVERALL VELOCITY
 	if not external_force.is_equal_approx(Vector3.ZERO):
-		velocity += external_force
+		speed += external_force
 		
 	#ADD FLOOR VELOCITY FOR MOVING PLATFORM
 	if is_on_floor():
@@ -483,9 +483,17 @@ func do_walk(delta):
 			if Vector2(input_h, input_v).length() < 0.2:
 				velocity_h *= 0.5
 		else:
-			velocity += get_floor_velocity() * delta
+			speed += get_platform_velocity() * delta
 		
-	var _vel = move_and_slide_with_snap(velocity, snap_vector, -gravity_vector, true, 4, deg2rad(45), false)
+	set_velocity(speed)
+	# TODOConverter3To4 looks that snap in Godot 4 is float, not vector like in Godot 3 - previous value `snap_vector`
+	set_up_direction(-gravity_vector)
+	set_floor_stop_on_slope_enabled(true)
+	set_max_slides(4)
+	set_floor_max_angle(deg_to_rad(45))
+	# TODOConverter3To4 infinite_inertia were removed in Godot 4 - previous value `false`
+	move_and_slide()
+	var _vel = speed
 	
 	#CLIMB STAIR
 	if climb_stair:
@@ -502,9 +510,9 @@ func do_walk(delta):
 	
 	#PUSH RIGIDBODY 
 	if is_on_wall() and bump_force > 0:
-		for i in get_slide_count():
-			if get_slide_collision(i).collider is RigidBody:
-				var o : RigidBody = get_slide_collision(i).collider
+		for i in get_slide_collision_count():
+			if get_slide_collision(i).collider is RigidBody3D:
+				var o : RigidBody3D = get_slide_collision(i).collider
 				var bump_impulse = (o.global_transform.origin - global_transform.origin).normalized() * bump_force
 				o.apply_central_impulse(bump_impulse)
 				
@@ -522,7 +530,7 @@ func do_walk(delta):
 	#WALLRUN
 	if input_sprint and is_wallrun_allowed() and feat_wallrun:
 		var wall_normal = get_slide_collision(0).normal
-		if global_transform.basis.z.angle_to(wall_normal) > deg2rad(10):
+		if global_transform.basis.z.angle_to(wall_normal) > deg_to_rad(10):
 			start_wallrun()
 			
 	#CLIMBING
@@ -549,11 +557,13 @@ func do_climb(delta):
 			climb_phase += 1
 	else:
 		dir = -global_transform.basis.z * 0.3
-	velocity = dir * speed_h_max * delta
+	speed = dir * speed_h_max * delta
 	
-	var _vel = move_and_slide(velocity)
+	set_velocity(speed)
+	move_and_slide()
+	var _vel = speed
 	
-	prev_vel_h = velocity * Vector3(1,0,1)
+	prev_vel_h = speed * Vector3(1,0,1)
 	prev_vel_v = Vector3.ZERO
 	
 	climb_timer -= delta
@@ -598,9 +608,16 @@ func do_ladder(delta):
 	#VERTICAL VELOCITY
 	velocity_v = Vector3.ZERO
 	
-	velocity = velocity_h + velocity_v
+	speed = velocity_h + velocity_v
 	
-	var _vel = move_and_slide(velocity, -gravity_vector, true, 4, deg2rad(45), false)
+	set_velocity(speed)
+	set_up_direction(-gravity_vector)
+	set_floor_stop_on_slope_enabled(true)
+	set_max_slides(4)
+	set_floor_max_angle(deg_to_rad(45))
+	# TODOConverter3To4 infinite_inertia were removed in Godot 4 - previous value `false`
+	move_and_slide()
+	var _vel = speed
 	prev_vel_h = velocity_h
 	prev_vel_v = velocity_v
 
@@ -624,7 +641,7 @@ func do_slide(delta):
 	
 	if is_on_floor() and jump_skip_timer <= 0: 
 		#ON FLOOR
-		if floor_angle <= deg2rad(slope_limit): #STICKING ON FLOOR / SLOPE
+		if floor_angle <= deg_to_rad(slope_limit): #STICKING ON FLOOR / SLOPE
 			if floor_collision:
 				vertical_vector = -floor_collision.normal
 				snap_vector = -floor_collision.normal
@@ -642,9 +659,16 @@ func do_slide(delta):
 		if velocity_v.length() < gravity_force:
 			velocity_v += vertical_vector * (delta * gravity_acc)
 	
-	velocity = velocity_h + velocity_v
+	speed = velocity_h + velocity_v
 	
-	var _vel = move_and_slide(velocity, -gravity_vector, true, 4, deg2rad(45), false)
+	set_velocity(speed)
+	set_up_direction(-gravity_vector)
+	set_floor_stop_on_slope_enabled(true)
+	set_max_slides(4)
+	set_floor_max_angle(deg_to_rad(45))
+	# TODOConverter3To4 infinite_inertia were removed in Godot 4 - previous value `false`
+	move_and_slide()
+	var _vel = speed
 	prev_vel_h = velocity_h
 	prev_vel_v = velocity_v
 	
@@ -663,9 +687,16 @@ func do_pulled(delta):
 	#VERTICAL VELOCITY
 	velocity_v = Vector3.ZERO
 	
-	velocity = velocity_h + velocity_v
+	speed = velocity_h + velocity_v
 	
-	var _vel = move_and_slide(velocity, -gravity_vector, true, 4, deg2rad(45), false)
+	set_velocity(speed)
+	set_up_direction(-gravity_vector)
+	set_floor_stop_on_slope_enabled(true)
+	set_max_slides(4)
+	set_floor_max_angle(deg_to_rad(45))
+	# TODOConverter3To4 infinite_inertia were removed in Godot 4 - previous value `false`
+	move_and_slide()
+	var _vel = speed
 	prev_vel_h = velocity_h
 	prev_vel_v = velocity_v
 	
@@ -708,9 +739,16 @@ func do_swim(delta):
 	velocity_v = prev_vel_v
 	velocity_v *= swim_v_deacc
 	
-	velocity = velocity_h + velocity_v
+	speed = velocity_h + velocity_v
 	
-	var _vel = move_and_slide(velocity, -gravity_vector, true, 4, deg2rad(45), false)
+	set_velocity(speed)
+	set_up_direction(-gravity_vector)
+	set_floor_stop_on_slope_enabled(true)
+	set_max_slides(4)
+	set_floor_max_angle(deg_to_rad(45))
+	# TODOConverter3To4 infinite_inertia were removed in Godot 4 - previous value `false`
+	move_and_slide()
+	var _vel = speed
 	prev_vel_h = velocity_h
 	prev_vel_v = velocity_v
 	
@@ -739,7 +777,7 @@ func start_wallrun():
 	automove_dir = automove_dir.normalized()
 	
 	state = STATELIST.WALLRUN
-	if global_transform.basis.x.angle_to(normal) < deg2rad(90):
+	if global_transform.basis.x.angle_to(normal) < deg_to_rad(90):
 		wallrun_left = true
 	else:
 		wallrun_left = false
@@ -774,9 +812,16 @@ func do_wallrun(delta):
 		jump_count = 1
 		emit_signal("body_just_jump")
 	
-	velocity = velocity_h + velocity_v
+	speed = velocity_h + velocity_v
 	
-	var _vel = move_and_slide(velocity, -gravity_vector, true, 4, deg2rad(45), false)
+	set_velocity(speed)
+	set_up_direction(-gravity_vector)
+	set_floor_stop_on_slope_enabled(true)
+	set_max_slides(4)
+	set_floor_max_angle(deg_to_rad(45))
+	# TODOConverter3To4 infinite_inertia were removed in Godot 4 - previous value `false`
+	move_and_slide()
+	var _vel = speed
 	prev_vel_h = velocity_h
 	prev_vel_v = velocity_v
 	
@@ -813,11 +858,11 @@ func get_camera_root():
 
 #PUBLIC FUNCTIONS
 func camera_recoil(force):
-	var ry = rand_range(-force, force)
-	var rx = rand_range(-force, force)
+	var ry = randf_range(-force, force)
+	var rx = randf_range(-force, force)
 
-	rotate_y(deg2rad(ry))
-	rotation_helper.rotate_x(deg2rad(rx))
+	rotate_y(deg_to_rad(ry))
+	rotation_helper.rotate_x(deg_to_rad(rx))
 
 func apply_central_impulse(par):
 	impulse = par
@@ -842,5 +887,5 @@ func execute_pulled(p_target, p_dir,  p_speed, p_max_time):
 	pulled_distance = pulled_start.distance_to(pulled_target)
 	start_pulled()
 
-func get_velocity():
-	return velocity
+func get_speed():
+	return speed

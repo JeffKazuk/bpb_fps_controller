@@ -1,12 +1,12 @@
-extends Area
+extends Area3D
 
-export (NodePath) var logic_target
+@export var logic_target: NodePath
 
-export (bool) var ladder = false
-export (bool) var wind_force = false
-export (bool) var gravity_sphere = false
-export (bool) var gravity_local_down = false
-export (bool) var swim_area = false
+@export var ladder: bool = false
+@export var wind_force: bool = false
+@export var gravity_sphere: bool = false
+@export var gravity_local_down: bool = false
+@export var swim_area: bool = false
 
 var target
 # Called when the node enters the scene tree for the first time.

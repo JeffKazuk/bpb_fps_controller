@@ -3,26 +3,26 @@
 [ext_resource path="res://player_controller/system/Signal_out.tscn" type="PackedScene" id=1]
 [ext_resource path="res://player_controller/system/arrow1.glb" type="PackedScene" id=2]
 
-[sub_resource type="CubeMesh" id=1]
+[sub_resource type="BoxMesh" id=1]
 size = Vector3( 7, 4, 18 )
 
-[sub_resource type="SpatialMaterial" id=2]
+[sub_resource type="StandardMaterial3D" id=2]
 flags_transparent = true
 albedo_color = Color( 0.152941, 0.733333, 0.847059, 0.415686 )
 
-[sub_resource type="BoxShape" id=3]
+[sub_resource type="BoxShape3D" id=3]
 extents = Vector3( 3.5, 2, 9 )
 
-[node name="wind_tunnel" type="Spatial"]
+[node name="wind_tunnel" type="Node3D"]
 
-[node name="MeshInstance" type="MeshInstance" parent="."]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource( 1 )
 material/0 = SubResource( 2 )
 
 [node name="Signal_out" parent="." instance=ExtResource( 1 )]
 wind_force = 3.0
 
-[node name="CollisionShape" type="CollisionShape" parent="Signal_out"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Signal_out"]
 shape = SubResource( 3 )
 
 [node name="arrow1" parent="." instance=ExtResource( 2 )]
